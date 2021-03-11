@@ -13,7 +13,7 @@ var padding = 40;
 var middlePadding = (padding * 2) + 100;
 var width = $(window).width() - middlePadding - CHART_WIDTH - 100;
 
-var episodes = [2,4,6,9,12,16,20,23];
+var episodes = [2,4,6];
 var totalData;
 var dFirst;
 
@@ -24,13 +24,14 @@ var colors = {
     "D": "#9dedc2",
     "F": "gray",
     "?": "#000000",
-    "-": "#000000"
+    "-": "#000000",
+    "N": "#696969"
 };
 
 // Set up plot
 var svg = d3.select("#plot").append("svg")
     .attr("class", "axis")
-    .attr("height", height + padding * 2)
+    .attr("height", 520)
     .attr("width", width + padding * 2);
 
 var scaleX = d3.scaleLinear().domain([0, episodes.length - 1]).range([0, width]);
@@ -40,10 +41,10 @@ var plot = svg.append("g").attr("transform", "translate(" + padding + "," + padd
 setXAxis();
 
 // Get data
-d3.csv("trainees.csv", parseLine, function (err, data) {
+d3.csv("main.csv", parseLine, function (err, data) {
     totalData = processData(data);
     plotData(data);
-    selectLine(dFirst, "#lineXINLiuYuxin");
+    selectLine(dFirst, "#lineYuJingtianTony");
     showChart("latestRank", true);
 });
 
@@ -143,16 +144,16 @@ function showChart(key, asc) {
         })
         .html(function(d) {
             var letter = '<div class="letter" style="background: ' + getBackground(d) + '; color: ' + getTextColor(d) + '">' + d.letter + '</div>';
-            var letter2 = '<div class="letter2" style="background: ' + getBackground2(d) + '; color: ' + getTextColor2(d) + '">' + d.letter2 + '</div>';
-            var letter3 = '<div class="letter3" style="background: ' + getBackground3(d) + '; color: ' + getTextColor3(d) + '">' + d.letter3 + '</div>';
+            // var letter2 = '<div class="letter2" style="background: ' + getBackground2(d) + '; color: ' + getTextColor2(d) + '">' + d.letter2 + '</div>';
+            // var letter3 = '<div class="letter3" style="background: ' + getBackground3(d) + '; color: ' + getTextColor3(d) + '">' + d.letter3 + '</div>';
             var rank = d.latestRank;
             if (rank == "-") {
                 rank = "-";
             }
-            return td(rank, "smWidth") + td(d.name, "nameWidth") + td(d.company, "companyWidth") + td(letter, "smWidth") + td(letter2, "smWidth") + td(letter3, "smWidth") + td(displayRankChange(d), "rankWidth");
+            return td(rank, "smWidth") + td(d.name, "nameWidth") + td(d.company, "companyWidth") + td(letter, "smWidth") + td(displayRankChange(d), "rankWidth");
         })
         .on("mouseover", function(d) {
-            selectLine(d, "#line" + d.name.replace(/\s/g, ''));
+            selectLine(d, "#line" + d.name.replace(/\s/g, '').replace("/", '').replace(".", ""));
         });
  }
 
@@ -170,33 +171,33 @@ function displayProfile(d) {
         .text(d.letter)
         .css("background", getBackground(d))
         .css("color", getTextColor(d));
-    $("#infoLetter2")
-        .text(d.letter2)
-        .css("background", getBackground2(d))
-        .css("color", getTextColor2(d));
-    $("#infoLetter3")
-        .text(d.letter3)
-        .css("background", getBackground3(d))
-        .css("color", getTextColor3(d));
+    // $("#infoLetter2")
+    //     .text(d.letter2)
+    //     .css("background", getBackground2(d))
+    //     .css("color", getTextColor2(d));
+    // $("#infoLetter3")
+    //     .text(d.letter3)
+    //     .css("background", getBackground3(d))
+    //     .css("color", getTextColor3(d));
     $("#infoCompany").text(d.company);
     $("#infoRank").html(getRankInfo(d));
 }
 
 function getImageSource(d) {
-    return "pics/" + d.name + ".jpg";
+    return "pics/" + d.name.replace(/\s/g, '').replace("/", "") + ".jpg";
 }
 
 function getBackground(d) {
     return colors[d.letter];
 }
 
-function getBackground2(d) {
-    return colors[d.letter2];
-}
+// function getBackground2(d) {
+//     return colors[d.letter2];
+// }
 
-function getBackground3(d) {
-    return colors[d.letter3];
-}
+// function getBackground3(d) {
+//     return colors[d.letter3];
+// }
 
 function resetLines() {
     plot.selectAll("path.ranking")
@@ -261,17 +262,18 @@ function plotData(data) {
             if (d.latestRank == 1) {
                 dFirst = d;
             }
-            return "line" + d.name.replace(/\s/g, '');
+            return "line" + d.name.replace(/\s/g, '').replace("/", "").replace(".", "");
         })
         .attr("d", function(d, i) {
             return pathGenerator(d.ranking);
         })
         .style("stroke", function(d, i) {
-            let color = getBackground3(d)
-            if (!color) {
-                color = getBackground2(d)
-                return color;
-            }
+            let color = getBackground(d)
+            // let color = getBackground3(d)
+            // if (!color) {
+            //     color = getBackground2(d)
+            //     return color;
+            // }
             return color;
         })
         .style("stroke-width", NORMAL_WIDTH)
@@ -353,10 +355,11 @@ function updateNotes(d) {
             $("#note" + i).hide();
         } else { // Show rank
             var rank = d.ranking[i].rank;
-            let color = getBackground3(d)
-            if (!color) {
-                color = getBackground2(d)
-            }
+            let color = getBackground(d)
+            // let color = getBackground3(d)
+            // if (!color) {
+            //     color = getBackground2(d)
+            // }
             $("#note" + i)
                 .text(rank)
                 .css("top", scaleY(rank) + OFFSET)
@@ -401,9 +404,9 @@ function parseLine(row) {
     var r = {};
     r.name = row.Name;
     r.company = row.Company;
-    r.letter = row["Level Audition"];
-    r.letter2 = row["Re-Evaluation"];
-    r.letter3 = row["2nd Re-Evaluation"];
+    r.letter = row["LevelAudition"];
+    // r.letter2 = row["Re-Evaluation"];
+    // r.letter3 = row["2nd Re-Evaluation"];
     r.specialNote = row.note;
     r.ranking = [];
     episodes.forEach(function(episode, i) {

@@ -162,12 +162,12 @@ path.ranking {
   position: absolute;
   top: 0;
   right: 50px;
-  width: 600px; }
+  width: 500px; }
   #chart tbody {
     display: block;
     overflow-y: scroll;
     max-height: 540px;
-    width: 600px; }
+    width: 500px; }
 
 #top {
   border-spacing: 0;
